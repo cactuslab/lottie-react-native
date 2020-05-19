@@ -115,6 +115,12 @@ declare module "lottie-react-native" {
     enableMergePathsAndroidForKitKatAndAbove?: boolean;
 
     /**
+     * A callback function which will be called when animation is started. Note that this
+     * callback will be called only when `loop` is set to false.
+     */
+    onAnimationStart ?: () => void;
+
+    /**
      * A callback function which will be called when animation is finished. Note that this
      * callback will be called only when `loop` is set to false.
      */

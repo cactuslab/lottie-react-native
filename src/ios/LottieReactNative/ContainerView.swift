@@ -13,6 +13,7 @@ class ContainerView: RCTView {
     private var sourceName: String = ""
     private var colorFilters: [NSDictionary] = []
     @objc var onAnimationFinish: RCTBubblingEventBlock?
+    @objc var onAnimationStart: RCTBubblingEventBlock?
     var animationView: AnimationView?
 
     @objc func setSpeed(_ newSpeed: CGFloat) {
@@ -103,14 +104,14 @@ class ContainerView: RCTView {
         )
     }
 
-    func play(fromFrame: AnimationFrameTime? = nil, toFrame: AnimationFrameTime, completion: LottieCompletionBlock? = nil) {
+    func play(fromFrame: AnimationFrameTime? = nil, toFrame: AnimationFrameTime, onStart: LottieBlock? = nil, completion: LottieCompletionBlock? = nil) {
         animationView?.backgroundBehavior = .pauseAndRestore
-        animationView?.play(fromFrame: fromFrame, toFrame: toFrame, loopMode: self.loop, completion: completion);
+        animationView?.play(fromFrame: fromFrame, toFrame: toFrame, loopMode: self.loop, onStart: onStart, completion: completion);
     }
 
-    func play(completion: LottieCompletionBlock? = nil) {
+    func play(onStart: LottieBlock? = nil, completion: LottieCompletionBlock? = nil) {
         animationView?.backgroundBehavior = .pauseAndRestore
-        animationView?.play(completion: completion)
+        animationView?.play(onStart: onStart, completion: completion)
     }
 
     func reset() {

@@ -60,6 +60,7 @@ const propTypes = {
   autoSize: PropTypes.bool,
   enableMergePathsAndroidForKitKatAndAbove: PropTypes.bool,
   source: PropTypes.oneOfType([PropTypes.object, PropTypes.string]).isRequired,
+  onAnimationStart: PropTypes.func,
   onAnimationFinish: PropTypes.func,
 };
 
@@ -94,6 +95,7 @@ class LottieView extends React.Component {
     super(props);
     this.viewConfig = viewConfig;
     this.refRoot = this.refRoot.bind(this);
+    this.onAnimationStart = this.onAnimationStart.bind(this);
     this.onAnimationFinish = this.onAnimationFinish.bind(this);
   }
 
@@ -145,6 +147,12 @@ class LottieView extends React.Component {
     }
   }
 
+  onAnimationStart() {
+    if (this.props.onAnimationStart) {
+      this.props.onAnimationStart()
+    }
+  }
+
   onAnimationFinish(evt) {
     if (this.props.onAnimationFinish) {
       this.props.onAnimationFinish(evt.nativeEvent.isCancelled);
@@ -179,6 +187,7 @@ class LottieView extends React.Component {
           style={[aspectRatioStyle, sizeStyle || { width: '100%', height: '100%' }, style]}
           sourceName={sourceName}
           sourceJson={sourceJson}
+          onAnimationStart={this.onAnimationStart}
           onAnimationFinish={this.onAnimationFinish}
         />
       </View>

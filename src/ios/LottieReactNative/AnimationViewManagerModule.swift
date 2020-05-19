@@ -26,6 +26,12 @@ class AnimationViewManagerModule: RCTViewManager {
                 return
             }
 
+            let onStart: LottieBlock = {
+                if let onStart = view.onAnimationFinish {
+                    onStart([:])
+                }
+            }
+            
             let callback: LottieCompletionBlock = { animationFinished in
                 if let onFinish = view.onAnimationFinish {
                     onFinish(["isCancelled": animationFinished])
@@ -33,9 +39,9 @@ class AnimationViewManagerModule: RCTViewManager {
             }
 
             if (startFrame.intValue != -1 && endFrame.intValue != -1) {
-                view.play(fromFrame: AnimationFrameTime(truncating: startFrame), toFrame: AnimationFrameTime(truncating: endFrame), completion: callback)
+                view.play(fromFrame: AnimationFrameTime(truncating: startFrame), toFrame: AnimationFrameTime(truncating: endFrame), onStart: onStart, completion: callback)
             } else {
-                view.play(completion: callback)
+                view.play(onStart: onStart, completion: callback)
             }
         }      
     }

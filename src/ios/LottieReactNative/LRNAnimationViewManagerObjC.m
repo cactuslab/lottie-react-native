@@ -8,6 +8,7 @@ RCT_EXPORT_VIEW_PROPERTY(sourceName, NSString);
 RCT_EXPORT_VIEW_PROPERTY(progress, CGFloat);
 RCT_EXPORT_VIEW_PROPERTY(loop, BOOL);
 RCT_EXPORT_VIEW_PROPERTY(speed, CGFloat);
+RCT_EXPORT_VIEW_PROPERTY(onAnimationStart, RCTBubblingEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onAnimationFinish, RCTBubblingEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(colorFilters, NSArray);
 
