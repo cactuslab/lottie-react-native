@@ -27,7 +27,7 @@ class AnimationViewManagerModule: RCTViewManager {
             }
 
             let onStart: LottieBlock = {
-                if let onStart = view.onAnimationFinish {
+                if let onStart = view.onAnimationStart {
                     onStart([:])
                 }
             }
