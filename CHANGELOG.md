@@ -1,3 +1,30 @@
+## 4.0.1
+
+- Update react-native-safe-modules dependency
+
+## 4.0.0
+
+- Fix react-native 0.64 compatibility
+- Windows support [C#]
+- macOS Support (based on react-native-windows)
+- Moved lottie-ios to peerDependencies
+- Fix Android playback when startFrame > endFrame
+
+## 3.4.1
+
+- Updated the development app to React Native 0.62.2
+- Updated `lottie-ios` dependency to 3.1.8
+- Updated `lottie-android` dependency to 3.4.0
+
+## 3.4.0 (May 20, 2020)
+
+- Add auto embed fastlane
+- Updated Android Building environment
+- Add testID prop to AnimatedLottieView typescript definition
+- Added Pause & Resume commands. Also added `onLayout` prop.
+- Fix iOS speed not changing dynamically
+- Improved documentation
+
 ## 3.3.2 (Nov 15, 2019)
 
 - Removed support for `Reanimated`

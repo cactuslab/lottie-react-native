@@ -1,7 +1,3 @@
-#if canImport(React)
-import React
-#endif
-
 import Lottie
 
 class ContainerView: RCTView {
@@ -18,6 +14,15 @@ class ContainerView: RCTView {
 
     @objc func setSpeed(_ newSpeed: CGFloat) {
         speed = newSpeed
+
+        if (newSpeed != 0.0) {
+            animationView?.animationSpeed = newSpeed
+            if (!(animationView?.isAnimationPlaying ?? true)) {
+                animationView?.play()
+            }
+        } else if (animationView?.isAnimationPlaying ?? false) {
+            animationView?.pause()
+        }
     }
 
     @objc func setProgress(_ newProgress: CGFloat) {
@@ -40,8 +45,8 @@ class ContainerView: RCTView {
 
         guard let data = sourceJson.data(using: String.Encoding.utf8),
         let animation = try? JSONDecoder().decode(Animation.self, from: data) else {
-            if (RCT_DEV == 1) {
-                print("Unable to create the lottie animation obeject from the JSON source")
+            if (RCT_DEBUG == 1) {
+                print("Unable to create the lottie animation object from the JSON source")
             }
             return
         }
@@ -78,32 +83,6 @@ class ContainerView: RCTView {
         applyProperties()
     }
 
-    func hexStringToUIColor(hex: String) -> UIColor {
-        var cString:String = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-
-        if (cString.hasPrefix("#")) {
-            cString.remove(at: cString.startIndex)
-        }
-
-        if ((cString.count) == 0) {
-            return UIColor.red
-        }
-
-        if ((cString.count) != 6) {
-            return UIColor.green
-        }
-
-        var rgbValue:UInt32 = 0
-        Scanner(string: cString).scanHexInt32(&rgbValue)
-
-        return UIColor(
-            red: CGFloat((rgbValue & 0xFF0000) >> 16) / 255.0,
-            green: CGFloat((rgbValue & 0x00FF00) >> 8) / 255.0,
-            blue: CGFloat(rgbValue & 0x0000FF) / 255.0,
-            alpha: CGFloat(1.0)
-        )
-    }
-
     func play(fromFrame: AnimationFrameTime? = nil, toFrame: AnimationFrameTime, onStart: LottieBlock? = nil, completion: LottieCompletionBlock? = nil) {
         animationView?.backgroundBehavior = .pauseAndRestore
         animationView?.play(fromFrame: fromFrame, toFrame: toFrame, loopMode: self.loop, onStart: onStart, completion: completion);
@@ -117,6 +96,14 @@ class ContainerView: RCTView {
     func reset() {
         animationView?.currentProgress = 0;
         animationView?.pause()
+    }
+
+    func pause() {
+        animationView?.pause()
+    }
+
+    func resume() {
+        play()
     }
 
     // MARK: Private
@@ -140,7 +127,7 @@ class ContainerView: RCTView {
             for filter in colorFilters {
                 let keypath: String = "\(filter.value(forKey: "keypath") as! String).**.Color"
                 let fillKeypath = AnimationKeypath(keypath: keypath)
-                let colorFilterValueProvider = ColorValueProvider(hexStringToUIColor(hex: filter.value(forKey: "color") as! String).lottieColorValue)
+                let colorFilterValueProvider = ColorValueProvider(hexStringToColor(hex: filter.value(forKey: "color") as! String))
                 animationView?.setValueProvider(colorFilterValueProvider, keypath: fillKeypath)
             }
         }

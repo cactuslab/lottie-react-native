@@ -7,24 +7,39 @@ import {
   Platform,
   StyleSheet,
   ViewPropTypes,
+  requireNativeComponent,
+  NativeModules,
 } from 'react-native';
 import SafeModule from 'react-native-safe-modules';
 import PropTypes from 'prop-types';
 
-const NativeLottieView = SafeModule.component({
-  viewName: 'LottieAnimationView',
-  mockComponent: View,
-});
+
+const getNativeLottieViewForDesktop = () => {
+  return requireNativeComponent('LottieAnimationView') 
+}
+
+const NativeLottieView =
+  Platform.OS === 'macos' || Platform.OS === 'windows' ?
+    getNativeLottieViewForDesktop() :
+    SafeModule.component({ viewName: 'LottieAnimationView', mockComponent: View })
+
 const AnimatedNativeLottieView = Animated.createAnimatedComponent(NativeLottieView);
 
-const LottieViewManager = SafeModule.module({
-  moduleName: 'LottieAnimationView',
-  mock: {
-    play: () => {},
-    reset: () => {},
-    getConstants: () => {},
-  },
-});
+const LottieViewManager = Platform.select({
+  // react-native-windows doesn't work with SafeModule, it always returns the mock component
+  macos: NativeModules.LottieAnimationView,
+  windows: NativeModules.LottieAnimationView,
+  default: SafeModule.module({
+    moduleName: 'LottieAnimationView',
+    mock: {
+      play: () => {},
+      reset: () => {},
+      pause: () => {},
+      resume: () => {},
+      getConstants: () => {},
+    },
+  })
+})
 
 const ViewStyleExceptBorderPropType = (props, propName, componentName, ...rest) => {
   const flattened = StyleSheet.flatten(props[propName] || {});
@@ -62,6 +77,8 @@ const propTypes = {
   source: PropTypes.oneOfType([PropTypes.object, PropTypes.string]).isRequired,
   onAnimationStart: PropTypes.func,
   onAnimationFinish: PropTypes.func,
+  onLayout: PropTypes.func,
+  cacheComposition: PropTypes.bool,
 };
 
 const defaultProps = {
@@ -71,6 +88,7 @@ const defaultProps = {
   autoPlay: false,
   autoSize: false,
   enableMergePathsAndroidForKitKatAndAbove: false,
+  cacheComposition: true,
   resizeMode: 'contain',
 };
 
@@ -90,13 +108,14 @@ const safeGetViewManagerConfig = moduleName => {
   return UIManager[moduleName];
 };
 
-class LottieView extends React.Component {
+class LottieView extends React.PureComponent {
   constructor(props) {
     super(props);
     this.viewConfig = viewConfig;
     this.refRoot = this.refRoot.bind(this);
     this.onAnimationStart = this.onAnimationStart.bind(this);
     this.onAnimationFinish = this.onAnimationFinish.bind(this);
+    this.onLayout = this.onLayout.bind(this);
   }
 
   componentDidUpdate(prevProps) {
@@ -119,6 +138,14 @@ class LottieView extends React.Component {
     this.runCommand('reset');
   }
 
+  pause() {
+    this.runCommand('pause');
+  }
+
+  resume() {
+    this.runCommand('resume');
+  }
+
   runCommand(name, args = []) {
     const handle = this.getHandle();
     if (!handle) {
@@ -132,7 +159,14 @@ class LottieView extends React.Component {
           safeGetViewManagerConfig('LottieAnimationView').Commands[name],
           args,
         ),
+      windows: () =>
+        UIManager.dispatchViewManagerCommand(
+          handle,
+          safeGetViewManagerConfig('LottieAnimationView').Commands[name],
+          args,
+        ),
       ios: () => LottieViewManager[name](this.getHandle(), ...args),
+      macos: () => LottieViewManager[name](this.getHandle(), ...args),
     })();
   }
 
@@ -156,6 +190,12 @@ class LottieView extends React.Component {
   onAnimationFinish(evt) {
     if (this.props.onAnimationFinish) {
       this.props.onAnimationFinish(evt.nativeEvent.isCancelled);
+    }
+  }
+
+  onLayout(evt) {
+    if (this.props.onLayout) {
+      this.props.onLayout(evt);
     }
   }
 
@@ -189,6 +229,7 @@ class LottieView extends React.Component {
           sourceJson={sourceJson}
           onAnimationStart={this.onAnimationStart}
           onAnimationFinish={this.onAnimationFinish}
+          onLayout={this.onLayout}
         />
       </View>
     );

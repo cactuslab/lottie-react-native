@@ -11,6 +11,7 @@ import android.view.View.OnAttachStateChangeListener;
 import android.view.View;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.airbnb.lottie.RenderMode;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -31,6 +32,8 @@ class LottieAnimationViewManager extends SimpleViewManager<LottieAnimationView> 
   private static final int VERSION = 1;
   private static final int COMMAND_PLAY = 1;
   private static final int COMMAND_RESET = 2;
+  private static final int COMMAND_PAUSE = 3;
+  private static final int COMMAND_RESUME = 4;
 
   private Map<LottieAnimationView, LottieAnimationViewPropertyManager> propManagersMap = new WeakHashMap<>();
 
@@ -126,7 +129,9 @@ class LottieAnimationViewManager extends SimpleViewManager<LottieAnimationView> 
   @Override public Map<String, Integer> getCommandsMap() {
     return MapBuilder.of(
         "play", COMMAND_PLAY,
-        "reset", COMMAND_RESET
+        "reset", COMMAND_RESET,
+        "pause", COMMAND_PAUSE,
+        "resume", COMMAND_RESUME
     );
   }
 
@@ -139,11 +144,16 @@ class LottieAnimationViewManager extends SimpleViewManager<LottieAnimationView> 
             int startFrame = args.getInt(0);
             int endFrame = args.getInt(1);
             if (startFrame != -1 && endFrame != -1) {
-               if(startFrame > endFrame){
+               if (startFrame > endFrame) {
                 view.setMinAndMaxFrame(endFrame, startFrame);
-                view.reverseAnimationSpeed();
+                if (view.getSpeed() > 0) {
+                  view.reverseAnimationSpeed();
+                }
               } else {
                 view.setMinAndMaxFrame(startFrame, endFrame);
+                if (view.getSpeed() < 0) {
+                  view.reverseAnimationSpeed();
+                }
               }
             }
             if (ViewCompat.isAttachedToWindow(view)) {
@@ -180,6 +190,28 @@ class LottieAnimationViewManager extends SimpleViewManager<LottieAnimationView> 
         });
       }
       break;
+      case COMMAND_PAUSE: {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+            if (ViewCompat.isAttachedToWindow(view)) {
+                view.pauseAnimation();
+            }
+            }
+        });
+      }
+      break;
+      case COMMAND_RESUME: {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+          @Override
+          public void run() {
+            if (ViewCompat.isAttachedToWindow(view)) {
+              view.resumeAnimation();
+            }
+          }
+        });
+      }
+      break;
     }
   }
 
@@ -201,6 +233,11 @@ class LottieAnimationViewManager extends SimpleViewManager<LottieAnimationView> 
     getOrCreatePropertyManager(view).setAnimationJson(json);
   }
 
+  @ReactProp(name = "cacheComposition")
+  public void setCacheComposition(LottieAnimationView view, boolean cacheComposition) {
+    view.setCacheComposition(cacheComposition);
+  }
+
   @ReactProp(name = "resizeMode")
   public void setResizeMode(LottieAnimationView view, String resizeMode) {
     ImageView.ScaleType mode = null;
@@ -212,6 +249,19 @@ class LottieAnimationViewManager extends SimpleViewManager<LottieAnimationView> 
       mode = ImageView.ScaleType.CENTER;
     }
     getOrCreatePropertyManager(view).setScaleType(mode);
+  }
+
+  @ReactProp(name = "renderMode")
+  public void setRenderMode(LottieAnimationView view, String renderMode) {
+    RenderMode mode = null;
+    if ("AUTOMATIC".equals(renderMode) ){
+      mode = RenderMode.AUTOMATIC;
+    }else if ("HARDWARE".equals(renderMode)){
+      mode = RenderMode.HARDWARE;
+    }else if ("SOFTWARE".equals(renderMode)){
+      mode = RenderMode.SOFTWARE;
+    }
+    getOrCreatePropertyManager(view).setRenderMode(mode);
   }
 
   @ReactProp(name = "progress")

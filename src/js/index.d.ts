@@ -1,5 +1,5 @@
 declare module "lottie-react-native" {
-  import { Animated, StyleProp, ViewStyle } from "react-native";
+  import { Animated, StyleProp, ViewStyle, LayoutChangeEvent } from "react-native";
   /**
    * Serialized animation as generated from After Effects
    */
@@ -24,7 +24,7 @@ declare module "lottie-react-native" {
   /**
    * Properties of the AnimatedLottieView component
    */
-  interface AnimatedLottieViewProps {
+  export interface AnimatedLottieViewProps {
     /**
      * The source of animation. Can be referenced as a local asset by a string, or remotely
      * with an object with a `uri` property, or it can be an actual JS object of an
@@ -39,7 +39,7 @@ declare module "lottie-react-native" {
      * animation will correspondingly update to the frame at that progress value. This
      * prop is not required if you are using the imperative API.
      */
-    progress?: number | Animated.Value;
+    progress?: number | Animated.Value | Animated.AnimatedInterpolation;
 
     /**
      * The speed the animation will progress. This only affects the imperative API. The
@@ -89,6 +89,18 @@ declare module "lottie-react-native" {
     resizeMode?: "cover" | "contain" | "center";
 
     /**
+     * Determines how Lottie should render
+     * Refer to LottieAnimationView#setRenderMode(RenderMode) for more information.
+     */
+    renderMode?: "AUTOMATIC" | "HARDWARE" | "SOFTWARE";
+
+    /**
+     * [Android]. A boolean flag indicating whether or not the animation should caching. Defaults to true.
+     * Refer to LottieAnimationView#setCacheComposition(boolean) for more information.
+     */
+    cacheComposition?: boolean;
+
+    /**
      * [Android]. Allows to specify kind of cache used for animation. Default value weak.
      * strong - cached forever
      * weak   - cached as long it is in active use
@@ -127,9 +139,19 @@ declare module "lottie-react-native" {
     onAnimationFinish ?: (isCancelled: boolean) => void;
 
     /**
+     * A callback function which will be called when the view has been laid out.
+     */
+    onLayout?: (event: LayoutChangeEvent) => void;
+
+    /**
      * An array of layers you want to override its color filter.
      */
     colorFilters ?: Array<ColorFilter>;
+
+    /**
+     * A string to identify the component during testing
+     */
+    testID?: string;
   }
 
   /**
@@ -143,7 +165,9 @@ declare module "lottie-react-native" {
   class AnimatedLottieView extends React.Component<AnimatedLottieViewProps, {}> {
     play(startFrame?: number, endFrame?: number): void;
     reset(): void;
+    pause(): void;
+    resume(): void;
   }
 
-  export = AnimatedLottieView;
+  export default AnimatedLottieView;
 }

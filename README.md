@@ -10,18 +10,18 @@ For the first time, designers can create **and ship** beautiful animations witho
 
 ## Installing (React Native >= 0.60.0)
 
-Install `lottie-react-native` (latest) and `lottie-ios` (3.1.3):
+Install `lottie-react-native` (latest) and `lottie-ios` (3.1.8):
 
 ```
 yarn add lottie-react-native
-yarn add lottie-ios@3.1.3
+yarn add lottie-ios@3.1.8
 ```
 
 or
 
 ```
 npm i --save lottie-react-native
-npm i --save lottie-ios@3.1.3
+npm i --save lottie-ios@3.1.8
 ```
 
 Go to your ios folder and run:
@@ -78,12 +78,11 @@ Use `react-native link` to add the library to your project:
 react-native link lottie-ios
 react-native link lottie-react-native
 ```
-Note: 
 
-Go to your ios folder and run:
+Link the native iOS code by running:
 
 ```
-pod install
+npx pod-install
 ```
 
 **_ IMPORTANT _**
@@ -91,6 +90,44 @@ pod install
 If you have issues with your iOS project, open the Xcode project configuration and add the `Lottie.framework` as `Embedded Binaries`.
 
 Apps that use static Xcode project linking need to set iOS deployment version to iOS 12 _or_ switch to CocoaPods-based linking (using frameworks) _or_ downgrade `lottie-react-native` to version **_2.6.1_**.
+
+**Auto Embed**
+
+The following fastlane will auto embed the missing Lottie.framework file:
+
+```
+desc "Add Lottie.framework to Embedded Binaries"
+lane :add_lottie_framework do
+  lottie_xcodeproj_path = '../../node_modules/lottie-ios/Lottie.xcodeproj'
+  if File.exist?(lottie_xcodeproj_path)
+    project_location = '../ENV["GYM_SCHEME"].xcodeproj'
+    target_name = 'ENV["GYM_SCHEME"]'
+    framework_name = 'Lottie.framework'
+
+    # Get useful variables
+    project = Xcodeproj::Project.open(project_location)
+    target = project.targets.find { |target| target.to_s == target_name }
+    frameworks_build_phase = target.build_phases.find { |build_phase| build_phase.to_s == 'FrameworksBuildPhase' }
+
+    # Add new "Embed Frameworks" build phase to target
+    embed_frameworks_build_phase = target.new_copy_files_build_phase('Embed Frameworks')
+    embed_frameworks_build_phase.symbol_dst_subfolder_spec = :frameworks
+
+    # Get reference to Lottie.framework file
+    objects = project.objects.select { |obj| obj.isa == 'PBXContainerItemProxy'}
+    lottie_ios = objects.find { |object| object.remote_info == 'Lottie_iOS' }
+    objects = project.objects.select { |obj| obj.isa == 'PBXReferenceProxy'}
+    framework_ref = objects.find { |object| object.remote_ref == lottie_ios }
+
+    # Add framework to target as "Embedded Frameworks"
+    build_file = embed_frameworks_build_phase.add_file_reference(framework_ref)
+    frameworks_build_phase.add_file_reference(framework_ref)
+    build_file.settings = { 'ATTRIBUTES' => ['CodeSignOnCopy', 'RemoveHeadersOnCopy'] }
+
+    project.save
+  end
+end
+```
 
 ## Installing (React Native <= 0.58.x)
 
@@ -127,6 +164,9 @@ pod install
 If you have issues with your iOS project, open the Xcode project configuration and add the `Lottie.framework` as `Embedded Binaries`.
 
 Apps that use static Xcode project linking need to set iOS deployment version to iOS 12 _or_ switch to CocoaPods-based linking (using frameworks) _or_ downgrade `lottie-react-native` to version **_2.6.1_**.
+
+**_ IMPORTANT _**
+Not all After Effects features are supported by Lottie. If you notice there are some layers or animations missing check [this list](https://github.com/airbnb/lottie/blob/master/supported-features.md) to ensure they are supported.
 
 ## Usage
 

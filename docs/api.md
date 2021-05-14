@@ -4,7 +4,7 @@
 |---|---|---|
 |**`source`**| **Mandatory** - The source of animation. Can be referenced as a local asset by a string, or remotely with an object with a `uri` property, or it can be an actual JS object of an animation, obtained (for example) with something like `require('../path/to/animation.json')` |*None*|
 |**`progress`**| A number between 0 and 1, or an `Animated` number between 0 and 1. This number represents the normalized progress of the animation. If you update this prop, the animation will correspondingly update to the frame at that progress value. This prop is not required if you are using the imperative API. |`0`|
-|**`speed`**| The speed the animation will progress. This only affects the imperative API. Sending a negative value will reverse the animation |`1`|
+|**`speed`**| The speed the animation will progress. Sending a negative value will reverse the animation |`1`|
 |**`duration`**| The duration of the animation in ms. Takes precedence over `speed` when set. This only works when `source` is an actual JS object of an animation. |`undefined`|
 |**`loop`**|A boolean flag indicating whether or not the animation should loop. |`true`|
 |**`autoPlay`**|A boolean flag indicating whether or not the animation should start automatically when mounted. This only affects the imperative API.  |`false`|
@@ -13,6 +13,8 @@
 |**`imageAssetsFolder`**| Needed for **Android** to work properly with assets, iOS will ignore it. |*None*|
 |**`onAnimationStart`**| A callback function which will be called when animation is started. Note that this callback will be called only when `loop` is set to false. |*None*|
 |**`onAnimationFinish`**| A callback function which will be called when animation is finished. Note that this callback will be called only when `loop` is set to false. |*None*|
+|**`renderMode`**| **Only Android**, a String flag to set whether or not to render with `HARDWARE` or `SOFTWARE` acceleration |`AUTOMATIC`|
+|**`cacheComposition`**| **Only Android**, a boolean flag indicating whether or not the animation should do caching. |`true`|
 
 ## Methods (Imperative API):
 
@@ -20,6 +22,8 @@
 |---|---|
 |**`play`**| Play the animation all the way through, at the speed specified as a prop. It can also play a section of the animation when called as `play(startFrame, endFrame)`.
 |**`reset`**| Reset the animation back to `0` progress.
+|**`pause`**| Pauses the animation.
+|**`resume`**| Resumes the paused animation.
 
 ## Using animations with assets
 

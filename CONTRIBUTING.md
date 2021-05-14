@@ -24,7 +24,25 @@ npm run run:packager
 
 ### Developing on Android
 
+While the packager is running and you have an Android device or emulator connected to your computer, build and launch the Android app.
+
+```
+npm run run:android
+```
+
 ### Developing on iOS
+
+You need to download the iOS dependencies at least once before you run the app.
+
+```
+npm run build:pods
+```
+
+While the packager is running and you have an iOS device or simulator connected to your computer, build and launch the iOS app.
+
+```
+npm run run:ios
+```
 
 ### Style & Linting
 
